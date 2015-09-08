@@ -2,14 +2,18 @@
 
 %feature("autodoc", "3");
 
-%typemap(jtype) (uint8_t *txBuf, int length) "byte[]"
-%typemap(jstype) (uint8_t *txBuf, int length) "byte[]"
-%typemap(jni) (uint8_t *txBuf, int length) "jbyteArray"
-%typemap(javain) (uint8_t *txBuf, int length) "$javainput"
+%typemap(jtype) (uint8_t *buffer, int length) "byte[]"
+%typemap(jstype) (uint8_t *buffer, int length) "byte[]"
+%typemap(jni) (uint8_t *buffer, int length) "jbyteArray"
+%typemap(javain) (uint8_t *buffer, int length) "$javainput"
 
-%typemap(in,numinputs=1) (uint8_t *txBuf, int length) {
+%typemap(in,numinputs=1) (uint8_t *buffer, int length) {
   $1 = JCALL2(GetByteArrayElements, jenv, $input, NULL);
   $2 = JCALL1(GetArrayLength, jenv, $input);
+}
+
+%typemap(argout) (uint8_t *buffer, int length) {
+  JCALL3(ReleaseByteArrayElements, jenv, $input, $1, 0);
 }
 
 %typemap(jtype) (uint8_t *data, int length) "byte[]"

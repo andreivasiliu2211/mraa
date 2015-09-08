@@ -27,6 +27,7 @@
 #include "spi.h"
 #include "types.hpp"
 #include <stdexcept>
+#include <string.h>
 
 namespace mraa
 {
@@ -126,6 +127,7 @@ class Spi
         return mraa_spi_write_word(m_spi, (uint16_t) data);
     }
 
+#ifndef SWIG
     /**
      * Write buffer of bytes to SPI device The pointer return has to be
      * free'd by the caller. It will return a NULL pointer in cases of
@@ -139,6 +141,27 @@ class Spi
     write(uint8_t* txBuf, int length)
     {
         return mraa_spi_write_buf(m_spi, txBuf, length);
+    }
+#endif
+
+    /**
+     * Write buffer of bytes to SPI device. Buffer gets overwritten with
+     * bytes read from MISO line:
+     * @param buffer buffer to send
+     * @param length size of buffer to send
+     * @return Number of bytes read from the MISO line
+     */
+    int
+    send_receive(uint8_t* buffer, int length)
+    {
+        uint8_t *recv = mraa_spi_write_buf(m_spi, buffer, length);
+        if (recv == NULL)
+            return 0;
+
+        memcpy(buffer, recv, length * sizeof (uint8_t));
+        free(recv);
+
+        return length;
     }
 
 #ifndef SWIG
